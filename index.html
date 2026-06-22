@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>San Francisco Guide — Garrett &amp; John</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+/* =====================
+   RESET & BASE
+   ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #2B3A55;
+  --navy-hover: #364c6e;
+  --white: #ffffff;
+  --cream: #f8f6f3;
+  --divider: #ddd8d0;
+  --divider-light: #ede9e3;
+  --text-muted: rgba(43,58,85,0.55);
+  --card-hover: #f5f3ef;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background: var(--white);
+  color: var(--navy);
+  font-weight: 300;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* =====================
+   NAV
+   ===================== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  background: var(--white);
+  border-bottom: 1px solid var(--divider);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 48px;
+  height: 64px;
+}
+
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--navy);
+  cursor: pointer;
+  text-decoration: none;
+  user-select: none;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 40px;
+}
+
+.nav-links li a {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--navy);
+  text-decoration: none;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  padding-bottom: 3px;
+  border-bottom: 1px solid transparent;
+}
+
+.nav-links li a:hover { opacity: 0.8; }
+.nav-links li a.active { opacity: 1; border-bottom-color: var(--navy); }
+
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px;
+}
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: var(--navy);
+  transition: all 0.2s;
+}
+
+/* =====================
+   PAGES
+   ===================== */
+.page { display: none; padding-top: 64px; min-height: 100vh; }
+.page.active { display: block; }
+
+/* =====================
+   HOME
+   ===================== */
+.home-hero {
+  text-align: center;
+  padding: 88px 24px 72px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.home-eyebrow {
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.45;
+  margin-bottom: 32px;
+}
+
+.home-names {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 80px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--navy);
+}
+
+.home-and {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  margin: 12px 0;
+  color: var(--navy);
+  opacity: 0.6;
+}
+
+.home-rule {
+  width: 48px;
+  height: 1px;
+  background: var(--navy);
+  margin: 36px auto 32px;
+  opacity: 0.3;
+}
+
+.home-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--navy);
+  opacity: 0.85;
+}
+
+.home-date {
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.38;
+  margin-top: 28px;
+}
+
+/* Home cards */
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: var(--divider);
+  gap: 1px;
+  border-top: 1px solid var(--divider);
+  border-bottom: 1px solid var(--divider);
+  max-width: 100%;
+}
+
+.home-card {
+  background: var(--white);
+  padding: 60px 44px 52px;
+  cursor: pointer;
+  transition: background 0.25s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.home-card:hover { background: var(--card-hover); }
+
+.home-card-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--navy);
+  opacity: 0.3;
+  margin-bottom: 22px;
+}
+
+.home-card-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--navy);
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.home-card-desc {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.5;
+  font-weight: 500;
+  line-height: 2;
+}
+
+.home-card-cta {
+  display: inline-block;
+  margin-top: 32px;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--navy);
+  border-bottom: 1px solid var(--navy);
+  padding-bottom: 2px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.home-card:hover .home-card-cta { opacity: 1; }
+
+/* =====================
+   SECTION HEADER
+   ===================== */
+.section-header {
+  text-align: center;
+  padding: 64px 24px 48px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.section-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.4;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 54px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--navy);
+  line-height: 1.05;
+}
+
+.section-rule {
+  width: 44px;
+  height: 1px;
+  background: var(--navy);
+  margin: 24px auto;
+  opacity: 0.3;
+}
+
+.section-intro {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18.5px;
+  font-weight: 300;
+  line-height: 1.72;
+  color: var(--navy);
+  opacity: 0.82;
+}
+
+/* =====================
+   BACK BUTTON
+   ===================== */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.4;
+  padding: 20px 48px 0;
+  transition: opacity 0.2s;
+}
+.back-btn:hover { opacity: 0.8; }
+
+/* =====================
+   VIEW TOGGLE
+   ===================== */
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 0 auto 36px;
+  border: 1px solid var(--divider);
+  width: fit-content;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: 11px 32px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-right: 1px solid var(--divider);
+}
+.toggle-btn:last-child { border-right: none; }
+.toggle-btn.active { background: var(--navy); color: var(--white); opacity: 1; }
+.toggle-btn:hover:not(.active) { opacity: 0.9; background: var(--cream); }
+
+/* =====================
+   FILTER BAR
+   ===================== */
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0 auto 32px;
+  border: 1px solid var(--divider);
+  width: fit-content;
+  max-width: calc(100% - 96px);
+}
+
+.filter-btn {
+  background: none;
+  border: none;
+  border-right: 1px solid var(--divider);
+  padding: 11px 22px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:last-child { border-right: none; }
+.filter-btn.active { background: var(--navy); color: var(--white); opacity: 1; }
+.filter-btn:hover:not(.active) { opacity: 0.9; background: var(--cream); }
+
+/* =====================
+   PLACE CARDS GRID
+   ===================== */
+.places-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1px;
+  background: var(--divider);
+  border: 1px solid var(--divider);
+  max-width: 1160px;
+  margin: 0 auto 80px;
+}
+
+.place-card {
+  background: var(--white);
+  padding: 30px 34px 28px;
+  transition: background 0.22s;
+}
+.place-card:hover { background: var(--card-hover); }
+
+.place-tag {
+  font-size: 9px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.42;
+  font-weight: 500;
+  margin-bottom: 9px;
+}
+
+.place-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--navy);
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+
+.place-desc {
+  font-size: 12.5px;
+  line-height: 1.72;
+  color: var(--navy);
+  opacity: 0.7;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.place-links {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.place-link {
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--navy);
+  text-decoration: none;
+  border-bottom: 1px solid var(--navy);
+  padding-bottom: 1px;
+  opacity: 0.55;
+  transition: opacity 0.18s;
+}
+.place-link:hover { opacity: 1; }
+
+/* =====================
+   MAP CONTAINER
+   ===================== */
+.map-wrap {
+  max-width: 1160px;
+  margin: 0 auto 80px;
+  height: 520px;
+  border: 1px solid var(--divider);
+  display: none;
+  overflow: hidden;
+}
+.map-wrap.visible { display: block; }
+.map-wrap > div { width: 100%; height: 100%; }
+
+/* =====================
+   WALKS
+   ===================== */
+.walks-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px 20px;
+}
+
+.walk-card {
+  border: 1px solid var(--divider);
+  margin-bottom: 1px;
+  background: var(--white);
+}
+
+.walk-head {
+  padding: 28px 40px;
+  border-bottom: 1px solid var(--divider-light);
+}
+
+.walk-num {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.35;
+  margin-bottom: 7px;
+}
+
+.walk-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 33px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--navy);
+  margin-bottom: 5px;
+}
+
+.walk-sub {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.45;
+}
+
+.walk-body {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+}
+
+.walk-info {
+  padding: 32px 40px;
+  border-right: 1px solid var(--divider-light);
+}
+
+.walk-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17.5px;
+  line-height: 1.72;
+  color: var(--navy);
+  opacity: 0.83;
+  margin-bottom: 22px;
+}
+
+.walk-stops {
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.walk-stops li {
+  font-size: 12.5px;
+  line-height: 1.85;
+  color: var(--navy);
+  opacity: 0.75;
+  padding-left: 14px;
+  border-left: 1px solid var(--divider);
+  margin-bottom: 2px;
+}
+
+.walk-stops li strong {
+  font-weight: 500;
+  color: var(--navy);
+  opacity: 1;
+}
+
+.walk-map-pane {
+  height: 260px;
+  overflow: hidden;
+}
+
+.walk-map-pane > div { width: 100%; height: 100%; }
+
+/* =====================
+   FEATURED WALK (Crissy Field)
+   ===================== */
+.featured-walk {
+  max-width: 1040px;
+  margin: 0 auto 8px;
+  padding: 0 24px;
+}
+
+.featured-walk-card {
+  border: 1px solid var(--divider);
+  background: var(--cream);
+  overflow: hidden;
+}
+
+.featured-walk-head {
+  padding: 28px 40px 24px;
+  border-bottom: 1px solid var(--divider);
+  background: var(--navy);
+}
+
+.featured-walk-badge {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--white);
+  opacity: 0.5;
+  margin-bottom: 8px;
+}
+
+.featured-walk-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 33px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.featured-walk-sub {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--white);
+  opacity: 0.45;
+}
+
+.featured-walk-body {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+}
+
+.featured-walk-info {
+  padding: 32px 40px;
+  border-right: 1px solid var(--divider);
+}
+
+.featured-walk-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17.5px;
+  line-height: 1.72;
+  color: var(--navy);
+  opacity: 0.85;
+  margin-bottom: 22px;
+}
+
+.featured-walk-route {
+  background: var(--white);
+  border: 1px solid var(--divider);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+}
+
+.route-label {
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin-bottom: 10px;
+}
+
+.route-steps {
+  list-style: none;
+}
+
+.route-steps li {
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--navy);
+  opacity: 0.78;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--divider-light);
+}
+.route-steps li:last-child { border-bottom: none; }
+
+.route-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--navy);
+  opacity: 0.35;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.featured-walk-map-pane {
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+}
+.featured-walk-map-pane > div { width: 100%; height: 100%; }
+
+/* =====================
+   PARKS
+   ===================== */
+.parks-grid {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--divider);
+  border: 1px solid var(--divider);
+  margin-bottom: 56px;
+}
+
+.park-card {
+  background: var(--white);
+  padding: 32px 36px;
+  transition: background 0.2s;
+}
+.park-card:hover { background: var(--card-hover); }
+
+/* =====================
+   SUBSECTION TITLE
+   ===================== */
+.sub-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 14px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.45;
+  text-align: center;
+  padding: 52px 0 28px;
+}
+
+.sub-rule {
+  width: 30px;
+  height: 1px;
+  background: var(--navy);
+  opacity: 0.2;
+  margin: -18px auto 36px;
+}
+
+/* =====================
+   SAUSALITO
+   ===================== */
+.sausalito-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.sausalito-card {
+  border: 1px solid var(--divider);
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  overflow: hidden;
+}
+
+.sausalito-info {
+  padding: 44px 48px;
+}
+
+.sausalito-eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.38;
+  margin-bottom: 16px;
+}
+
+.sausalito-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--navy);
+  line-height: 1.1;
+  margin-bottom: 18px;
+}
+
+.sausalito-desc {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  line-height: 1.72;
+  opacity: 0.82;
+  margin-bottom: 24px;
+}
+
+.sausalito-recs {
+  list-style: none;
+  margin-bottom: 24px;
+}
+
+.sausalito-recs li {
+  font-size: 12.5px;
+  line-height: 1.85;
+  opacity: 0.72;
+  padding-left: 14px;
+  border-left: 1px solid var(--divider);
+  margin-bottom: 4px;
+}
+
+.sausalito-recs li strong { font-weight: 500; opacity: 1; }
+
+.sausalito-map {
+  border-left: 1px solid var(--divider);
+  overflow: hidden;
+}
+.sausalito-map > div { width: 100%; height: 100%; min-height: 340px; }
+
+/* =====================
+   FERRY BUILDING FEATURE
+   ===================== */
+.ferry-card {
+  max-width: 1040px;
+  margin: 0 24px 8px;
+  border: 1px solid var(--divider);
+  padding: 44px 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+}
+
+@media (min-width: 1064px) {
+  .ferry-card { margin: 0 auto 8px; }
+}
+
+.ferry-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--navy);
+  margin-bottom: 14px;
+  margin-top: 10px;
+}
+
+/* =====================
+   FOOTER
+   ===================== */
+footer {
+  text-align: center;
+  padding: 44px 24px;
+  border-top: 1px solid var(--divider);
+}
+
+.footer-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--navy);
+  opacity: 0.3;
+}
+
+/* =====================
+   LEAFLET OVERRIDES
+   ===================== */
+.leaflet-popup-content-wrapper {
+  border-radius: 0 !important;
+  box-shadow: 0 2px 12px rgba(43,58,85,0.15) !important;
+  border: 1px solid var(--divider) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content {
+  margin: 14px 18px !important;
+  font-family: 'Raleway', sans-serif !important;
+}
+.leaflet-popup-content strong {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  display: block;
+  margin-bottom: 3px;
+  color: var(--navy);
+}
+.leaflet-popup-content span {
+  font-size: 10px !important;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  display: block;
+  margin-bottom: 6px;
+}
+.leaflet-popup-content a {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--navy) !important;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+  opacity: 0.65;
+}
+.leaflet-popup-tip-container { display: none; }
+.leaflet-attribution-flag { display: none !important; }
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  opacity: 0.4 !important;
+  background: transparent !important;
+}
+
+/* =====================
+   RESPONSIVE
+   ===================== */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; gap: 20px; }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 64px; left: 0; right: 0;
+    background: var(--white);
+    padding: 20px 24px 28px;
+    border-bottom: 1px solid var(--divider);
+    gap: 16px;
+  }
+  .nav-hamburger { display: flex; }
+  .home-names { font-size: 52px; }
+  .home-cards { grid-template-columns: 1fr; }
+  .section-title { font-size: 40px; }
+  .back-btn { padding: 16px 24px 0; }
+  .walk-body { grid-template-columns: 1fr; }
+  .walk-map-pane { display: none; }
+  .featured-walk-body { grid-template-columns: 1fr; }
+  .featured-walk-map-pane { display: none; }
+  .sausalito-card { grid-template-columns: 1fr; }
+  .sausalito-map { display: none; }
+  .parks-grid { grid-template-columns: 1fr; }
+  .places-grid { grid-template-columns: 1fr; }
+  .filter-bar { max-width: calc(100% - 48px); }
+  .ferry-card { grid-template-columns: 1fr; gap: 24px; }
+}
+
+@media (max-width: 600px) {
+  .home-names { font-size: 40px; }
+  .home-hero { padding: 56px 24px 48px; }
+  .home-card { padding: 44px 28px 40px; }
+  .section-header { padding: 48px 24px 36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== NAV ===================== -->
+<nav id="main-nav">
+  <span class="nav-logo" onclick="showPage('home')">G &amp; J · SF Guide</span>
+  <ul class="nav-links" id="nav-links">
+    <li><a id="nav-home" class="active" onclick="showPage('home')">Home</a></li>
+    <li><a id="nav-hotel" onclick="showPage('hotel')">Near the Hotel</a></li>
+    <li><a id="nav-explore" onclick="showPage('explore')">Food &amp; Drink</a></li>
+    <li><a id="nav-activities" onclick="showPage('activities')">Activities</a></li>
+  </ul>
+  <div class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ===================== HOME ===================== -->
+<div id="page-home" class="page active">
+  <div class="home-hero">
+    <div class="home-eyebrow">September 12, 2026 · San Francisco</div>
+    <div class="home-names">
+      Garrett
+      <span class="home-and">and</span>
+      John
+    </div>
+    <div class="home-rule"></div>
+    <p class="home-intro">
+      We hope you use this guide to enjoy some of our favorite places and restaurants in San Francisco. Enjoy your weekend with us!
+    </p>
+    <div class="home-date">A guest guide to our city</div>
+  </div>
+
+  <div class="home-cards">
+    <div class="home-card" onclick="showPage('hotel')">
+      <div class="home-card-num">01</div>
+      <div class="home-card-title">Near the Hotel</div>
+      <div class="home-card-desc">Walking distance from The Jay<br>Coffee · Oysters · Wine · Dinner</div>
+      <span class="home-card-cta">Explore ↗</span>
+    </div>
+    <div class="home-card" onclick="showPage('explore')">
+      <div class="home-card-num">02</div>
+      <div class="home-card-title">Explore the City</div>
+      <div class="home-card-desc">Restaurants · Bars &amp; Wine<br>Bakeries · Fast Casual</div>
+      <span class="home-card-cta">Explore ↗</span>
+    </div>
+    <div class="home-card" onclick="showPage('activities')">
+      <div class="home-card-num">03</div>
+      <div class="home-card-title">Activities &amp; Walks</div>
+      <div class="home-card-desc">Neighborhood Walks · Parks<br>Farmer's Market · Sausalito</div>
+      <span class="home-card-cta">Explore ↗</span>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Garrett &amp; John · September 12, 2026 · San Francisco, California</div>
+  </footer>
+</div>
+
+<!-- ===================== NEAR THE HOTEL ===================== -->
+<div id="page-hotel" class="page">
+  <button class="back-btn" onclick="showPage('home')">← Back to Guide</button>
+  <div class="section-header">
+    <div class="section-eyebrow">Walking Distance</div>
+    <div class="section-title">Near the Hotel</div>
+    <div class="section-rule"></div>
+    <p class="section-intro">Everything here is within easy walking distance of The Jay in the Financial District. Morning coffee, lunch, dinner, and walking through Jackson Square.</p>
+  </div>
+
+  <div class="filter-bar" id="hotel-filters">
+    <button class="filter-btn active" onclick="filterHotel('all', this)">All</button>
+    <button class="filter-btn" onclick="filterHotel('restaurant', this)">Restaurants</button>
+    <button class="filter-btn" onclick="filterHotel('bar', this)">Bars &amp; Wine</button>
+    <button class="filter-btn" onclick="filterHotel('coffee', this)">Coffee &amp; Pastry</button>
+    <button class="filter-btn" onclick="filterHotel('explore', this)">Things to Do</button>
+  </div>
+
+  <div class="view-toggle">
+    <button class="toggle-btn active" id="hotel-list-btn" onclick="setHotelView('list')">List View</button>
+    <button class="toggle-btn" id="hotel-map-btn" onclick="setHotelView('map')">Map View</button>
+  </div>
+
+  <div id="hotel-list-view">
+    <div class="places-grid" id="hotel-grid"></div>
+  </div>
+  <div class="map-wrap" id="hotel-map-wrap">
+    <div id="hotel-map"></div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Garrett &amp; John · September 12, 2026 · San Francisco</div>
+  </footer>
+</div>
+
+<!-- ===================== EXPLORE SF ===================== -->
+<div id="page-explore" class="page">
+  <button class="back-btn" onclick="showPage('home')">← Back to Guide</button>
+  <div class="section-header">
+    <div class="section-eyebrow">Restaurants · Bars · Bakeries</div>
+    <div class="section-title">Explore Through Food and Drink</div>
+    <div class="section-rule"></div>
+    <p class="section-intro">San Francisco's restaurant scene is diverse, with notable gems from no-frills to fine dining. These are our favorites.</p>
+  </div>
+
+  <div class="filter-bar" id="explore-filters">
+    <button class="filter-btn active" onclick="filterExplore('all', this)">All</button>
+    <button class="filter-btn" onclick="filterExplore('restaurant', this)">Restaurants</button>
+    <button class="filter-btn" onclick="filterExplore('bar', this)">Bars &amp; Wine</button>
+    <button class="filter-btn" onclick="filterExplore('bakery', this)">Bakeries</button>
+    <button class="filter-btn" onclick="filterExplore('casual', this)">Fast Casual</button>
+    <button class="filter-btn" onclick="filterExplore('afield', this)">Further Afield</button>
+  </div>
+
+  <div class="view-toggle">
+    <button class="toggle-btn active" id="explore-list-btn" onclick="setExploreView('list')">List View</button>
+    <button class="toggle-btn" id="explore-map-btn" onclick="setExploreView('map')">Map View</button>
+  </div>
+
+  <div id="explore-list-view">
+    <div class="places-grid" id="explore-grid"></div>
+  </div>
+  <div class="map-wrap" id="explore-map-wrap">
+    <div id="explore-map"></div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Garrett &amp; John · September 12, 2026 · San Francisco</div>
+  </footer>
+</div>
+
+<!-- ===================== ACTIVITIES ===================== -->
+<div id="page-activities" class="page">
+  <button class="back-btn" onclick="showPage('home')">← Back to Guide</button>
+  <div class="section-header">
+    <div class="section-eyebrow">Things to Do</div>
+    <div class="section-title">Activities &amp; Walks</div>
+    <div class="section-rule"></div>
+    <p class="section-intro">San Francisco is best explored on foot. Below are our favorite neighborhood walks, parks, and day trips to make the most of your time in the city.</p>
+  </div>
+
+  <!-- Ferry Building Feature -->
+  <div style="max-width:1040px;margin:0 auto;padding:0 24px 8px;">
+    <div class="ferry-card" style="margin:0 0 8px;">
+      <div>
+        <div class="place-tag">Saturday Mornings</div>
+        <div class="ferry-title">Ferry Building Farmer's Market</div>
+        <p class="walk-desc">One of the country's great farmers markets, right on the Embarcadero. Go Saturday morning for a visit to both the outdoor market and the marketplace inside. Our personal favorite: Primavera Mexican, tucked in the back of the building for breakfast (cash only). The strawberries from Yerena Farms are not to be missed either — buy more than you think you need.</p>
+        <a href="https://www.google.com/maps/search/?api=1&query=Ferry+Building+Farmer's+Market+San+Francisco" target="_blank" class="place-link">View on Map ↗</a>
+      </div>
+      <div>
+        <div class="place-tag">What to Get</div>
+        <ul class="walk-stops" style="margin-top:10px;">
+          <li><strong>Yerena Farm's Strawberries</strong> — The best in the state. Buy a flat.</li>
+          <li><strong>Primavera Mexican</strong> — Our favorite. Find them in the back of the building. Cash only. Worth the line.</li>
+          <li><strong>Hog Island Oyster Bar</strong> — Fresh Tomales Bay oysters on the water.</li>
+          <li><strong>Blue Bottle Coffee</strong> — Right inside the building.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUR FAVORITE WALK: Crissy Field -->
+  <div class="sub-title">Our Favorite Walk</div>
+  <div class="sub-rule"></div>
+  <div class="featured-walk">
+    <div class="featured-walk-card">
+      <div class="featured-walk-head">
+        <div class="featured-walk-badge">Our Favorite Way to See the Bridge</div>
+        <div class="featured-walk-title">Marina Green &amp; Crissy Field to Fort Point</div>
+        <div class="featured-walk-sub">Marina District to Presidio · ~2.5 miles one way</div>
+      </div>
+      <div class="featured-walk-body">
+        <div class="featured-walk-info">
+          <p class="featured-walk-desc">
+            This is our favorite walk in the city — and in our opinion, the single best way to experience the Golden Gate Bridge. You'll start at the Philz Coffee truck parked at Marina Green, then follow the water's edge through Crissy Field all the way to Fort Point, the Civil War-era fortress tucked directly under the southern anchorage of the bridge. The views get more spectacular with every step. Grab an Uber back when you're done.
+          </p>
+          <div class="featured-walk-route">
+            <div class="route-label">The Walk</div>
+            <ul class="route-steps">
+              <li><span class="route-dot"></span><div><strong>Start:</strong> Philz Coffee truck at Marina Green — get your coffee, then hit the path heading west along the water.</div></li>
+              <li><span class="route-dot"></span><div><strong>Marina Green:</strong> Wide, flat waterfront lawn with sweeping views of the bay, Sausalito, and the bridge in the distance. Walk west along the path.</div></li>
+              <li><span class="route-dot"></span><div><strong>Crissy Field:</strong> A restored tidal marsh and beach — one of the most beautiful spots in SF. The bridge gets closer with every step.</div></li>
+              <li><span class="route-dot"></span><div><strong>Fort Point:</strong> A Civil War fortress right under the bridge's southern tower. Walk underneath the arch and look straight up — the view is extraordinary.</div></li>
+              <li><span class="route-dot"></span><div><strong>Return:</strong> Grab an Uber back when you're done. Walk takes 45–60 minutes at a relaxed pace.</div></li>
+            </ul>
+          </div>
+          <a href="https://www.google.com/maps/dir/?api=1&origin=37.8061588,-122.4422824&destination=Fort+Point+National+Historic+Site+San+Francisco+CA&travelmode=walking" target="_blank" class="place-link">Open in Google Maps ↗</a>
+        </div>
+        <div class="featured-walk-map-pane">
+          <div id="crissy-map"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Neighborhood Walks -->
+  <div class="sub-title">Neighborhood Walks</div>
+  <div class="sub-rule"></div>
+  <div class="walks-wrap" id="walks-container"></div>
+
+  <!-- Parks -->
+  <div class="sub-title">Parks &amp; Outdoors</div>
+  <div class="sub-rule"></div>
+  <div class="parks-grid" id="parks-grid" style="max-width:1040px;margin:0 24px 56px;"></div>
+  <div style="max-width:1040px;margin:0 auto 0;"></div>
+
+  <!-- GGP Highlight -->
+  <div class="sub-title">Park Highlight: Golden Gate Park</div>
+  <div class="sub-rule"></div>
+  <div class="featured-walk">
+    <div class="featured-walk-card">
+      <div class="featured-walk-head">
+        <div class="featured-walk-badge">A San Francisco Essential</div>
+        <div class="featured-walk-title">Golden Gate Park</div>
+        <div class="featured-walk-sub">Inner Sunset · 1,017 acres</div>
+      </div>
+      <div class="featured-walk-body">
+        <div class="featured-walk-info">
+          <p class="featured-walk-desc">
+            Get an herbal latte at California Kahve and stroll through some highlights of the park.
+          </p>
+          <div class="featured-walk-route">
+            <div class="route-label">Highlights</div>
+            <ul class="route-steps">
+              <li><span class="route-dot"></span><div><strong>California Kahve:</strong> Start here. Herbal lattes and excellent coffee near the park's east entrance.</div></li>
+              <li><span class="route-dot"></span><div><strong>Carousel:</strong> The 1912 carousel just inside the park — a charming, old-fashioned detour.</div></li>
+              <li><span class="route-dot"></span><div><strong>AIDS Memorial Grove:</strong> A quiet, beautifully maintained grove in the heart of the park. Worth a moment.</div></li>
+              <li><span class="route-dot"></span><div><strong>California Academy of Sciences:</strong> World-class natural history museum with a living roof. Worth a visit if you have time.</div></li>
+              <li><span class="route-dot"></span><div><strong>SF Botanical Garden:</strong> 55 acres of plants from around the world. Peaceful and beautiful.</div></li>
+            </ul>
+          </div>
+          <a href="https://www.google.com/maps/search/?api=1&query=Golden+Gate+Park+San+Francisco" target="_blank" class="place-link">View in Google Maps ↗</a>
+        </div>
+        <div class="featured-walk-map-pane">
+          <div id="ggp-map"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sausalito -->
+  <div class="sub-title">Day Trip: Sausalito</div>
+  <div class="sub-rule"></div>
+  <div class="sausalito-wrap">
+    <div class="sausalito-card">
+      <div class="sausalito-info">
+        <div class="sausalito-eyebrow">Further Afield · Marin County</div>
+        <div class="sausalito-title">Cross the Golden<br>Gate Bridge</div>
+        <p class="sausalito-desc">
+          A perfect half-day trip: walk or rent a bike to cross the Golden Gate Bridge,
+          then coast down into the waterfront village of Sausalito for lunch or dinner.
+          The ferry back to the Ferry Building is a beautiful way to end it.
+        </p>
+        <ul class="sausalito-recs">
+          <li><strong>Joinery</strong> — Dockside fast casual on the waterfront. Order at the counter, eat outside. Excellent.</li>
+          <li><strong>Fish</strong> — Another dockside spot on the water. Known for their fresh-catch sandwiches and chowder.</li>
+          <li><strong>Ferry back</strong> — Take the Golden Gate Ferry from Sausalito back to the Ferry Building. Views of the city skyline on the way home.</li>
+        </ul>
+        <a href="https://www.google.com/maps/search/?api=1&query=Sausalito+CA" target="_blank" class="place-link">View Sausalito on Map ↗</a>
+      </div>
+      <div class="sausalito-map">
+        <div id="sausalito-map"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Garrett &amp; John · September 12, 2026 · San Francisco</div>
+  </footer>
+</div>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+
+// ====================================================
+// DATA
+// ====================================================
+
+const HOTEL_PLACES = [
+  { name:"Bar Sprezzatura", tag:"Bar · Aperitivo", cat:"bar", desc:"Our pick for drinks near the hotel. Beautiful atmosphere, great aperitivo selection and small plates. Close to The Jay.", map:"https://www.google.com/maps/search/?api=1&query=Bar+Sprezzatura+San+Francisco", web:null, lat:37.7875, lng:-122.3991 },
+  { name:"Verjus", tag:"Wine Bar · Restaurant", cat:"bar", desc:"Excellent wine bar with a thoughtful, focused menu. One of our go-to spots. Advance booking recommended.", map:"https://www.google.com/maps/search/?api=1&query=Verjus+Wine+Bar+San+Francisco", web:"https://verjussf.com", lat:37.7882, lng:-122.4037 },
+  { name:"Kokkari Estiatorio", tag:"Greek Restaurant", cat:"restaurant", desc:"One of San Francisco's best restaurants. Exceptional Greek food, warm room, beautiful hospitality. Advance booking required.", map:"https://www.google.com/maps/search/?api=1&query=Kokkari+Estiatorio+San+Francisco", web:"https://kokkari.com", lat:37.7988, lng:-122.4043 },
+  { name:"Tadich Grill", tag:"Seafood · American", cat:"restaurant", desc:"SF institution since 1849. Classic California seafood in a historic wood-paneled room. Lunch or dinner.", map:"https://www.google.com/maps/search/?api=1&query=Tadich+Grill+San+Francisco", web:null, lat:37.7935, lng:-122.3981 },
+  { name:"Wayfare Tavern", tag:"American · Gastropub", cat:"restaurant", desc:"Tyler Florence's SF flagship. Warm, lively atmosphere and reliably great food. Great for lunch or dinner.", map:"https://www.google.com/maps/search/?api=1&query=Wayfare+Tavern+San+Francisco", web:null, lat:37.7959, lng:-122.3992 },
+  { name:"R&G Lounge", tag:"Chinese Restaurant", cat:"restaurant", desc:"Excellent Cantonese food in Chinatown. Famous for their salt & pepper Dungeness crab.", map:"https://www.google.com/maps/search/?api=1&query=R+and+G+Lounge+San+Francisco", web:null, lat:37.7944, lng:-122.4039 },
+  { name:"Harbor View", tag:"Dim Sum · Chinese", cat:"restaurant", desc:"Swanky dim sum in a beautiful Embarcadero waterfront location. Great for a weekend brunch or dim sum lunch.", map:"https://www.google.com/maps/search/?api=1&query=Harbor+View+Restaurant+San+Francisco", web:null, lat:37.7986, lng:-122.3947 },
+  { name:"Pabu Izakaya", tag:"Japanese Restaurant", cat:"restaurant", desc:"Excellent Japanese food and sushi at 101 California Street. Great for a relaxed dinner.", map:"https://www.google.com/maps/search/?api=1&query=Pabu+Izakaya+San+Francisco", web:null, lat:37.7943, lng:-122.3977 },
+  { name:"Arquet", tag:"Californian · Wood-Fired", cat:"restaurant", desc:"Inventive California cooking with a wood-fired menu. Seasonal, ingredient-driven, excellent. Advance booking required.", map:"https://www.google.com/maps/search/?api=1&query=Arquet+Restaurant+San+Francisco", web:null, lat:37.8001, lng:-122.4012 },
+  { name:"Hog Island Oyster Co.", tag:"Oysters · Seafood", cat:"restaurant", desc:"Fresh oysters from their Tomales Bay farm, served at the Ferry Building. A San Francisco essential.", map:"https://www.google.com/maps/search/?api=1&query=Hog+Island+Oyster+Ferry+Building+San+Francisco", web:"https://hogislandoysters.com", lat:37.7957, lng:-122.3934 },
+  { name:"Sai's Vietnamese", tag:"Vietnamese · Casual", cat:"restaurant", desc:"No frills, excellent Vietnamese. Banh mi, pho, and bun bo hue that are some of the best in the city.", map:"https://www.google.com/maps/search/?api=1&query=Sai+Vietnamese+San+Francisco", web:null, lat:37.7940, lng:-122.3959 },
+  { name:"Delah Coffee", tag:"Coffee", cat:"coffee", desc:"A great local coffee shop steps from the hotel. Arabic and Yemeni coffee options in addition to traditional coffee.", map:"https://www.google.com/maps/search/?api=1&query=Delah+Coffee+San+Francisco", web:null, lat:37.7869, lng:-122.3990 },
+  { name:"Blue Bottle Coffee", tag:"Coffee", cat:"coffee", desc:"The Montgomery & Pacific location is steps away. Reliable option for pourovers.", map:"https://www.google.com/maps/search/?api=1&query=Blue+Bottle+Coffee+Montgomery+Pacific+San+Francisco", web:null, lat:37.7984, lng:-122.4025 },
+  { name:"Maison Nico", tag:"French Pastry", cat:"coffee", desc:"Excellent French pastries and viennoiserie. Go early. The croissants and kouign-amann are outstanding.", map:"https://www.google.com/maps/search/?api=1&query=Maison+Nico+San+Francisco", web:null, lat:37.7967, lng:-122.4034 },
+  { name:"William Stout Architectural Books", tag:"Bookstore · Jackson Square", cat:"explore", desc:"One of the best architecture and design bookshops in the country. Tucked into Jackson Square — worth a browse even if you leave empty-handed.", map:"https://www.google.com/maps/search/?api=1&query=William+Stout+Architectural+Books+San+Francisco", web:null, lat:37.7970, lng:-122.4033 },
+  { name:"Jackson Square Walk", tag:"Neighborhood · Historic District", cat:"explore", desc:"San Francisco's best-preserved Gold Rush-era neighborhood. Wander the brick-lined streets around Montgomery and Jackson — full of antique dealers, design showrooms, and quiet corners.", map:"https://www.google.com/maps/search/?api=1&query=Jackson+Square+Historic+District+San+Francisco", web:null, lat:37.7983, lng:-122.4030 },
+];
+
+const EXPLORE_PLACES = [
+  // Restaurants
+  { name:"Dalida", tag:"Mediterranean · Middle Eastern", cat:"restaurant", desc:"Beautiful, elegant Mediterranean and Middle Eastern cooking at the Presidio. Advance booking required.", map:"https://www.google.com/maps/search/?api=1&query=Dalida+Restaurant+San+Francisco", web:null, lat:37.8000, lng:-122.4596 },
+  { name:"Rich Table", tag:"Californian · Hayes Valley", cat:"restaurant", desc:"Inventive, ingredient-forward California cuisine in Hayes Valley. Reserve in advance.", map:"https://www.google.com/maps/search/?api=1&query=Rich+Table+San+Francisco", web:null, lat:37.7749, lng:-122.4228 },
+  { name:"Seven Hills", tag:"Italian · Russian Hill", cat:"restaurant", desc:"One of the best pasta restaurants in the city. A special occasion spot in Russian Hill. Reserve in advance.", map:"https://www.google.com/maps/search/?api=1&query=Seven+Hills+San+Francisco", web:null, lat:37.8019, lng:-122.4191 },
+  { name:"House of Prime Rib", tag:"American · Classic", cat:"restaurant", desc:"An SF institution. Walk in at 4:30pm to put your name on the list for a later seating. Go once.", map:"https://www.google.com/maps/search/?api=1&query=House+of+Prime+Rib+San+Francisco", web:"https://houseofprimerib.net", lat:37.7934, lng:-122.4227 },
+  { name:"Zuni Cafe", tag:"Californian · Civic Center", cat:"restaurant", desc:"A San Francisco icon. The brick-oven roast chicken for two is great, but so is everything else. Reserve in advance.", map:"https://www.google.com/maps/search/?api=1&query=Zuni+Cafe+San+Francisco", web:null, lat:37.7736, lng:-122.4217 },
+  { name:"A16", tag:"Italian · Marina", cat:"restaurant", desc:"Excellent Neapolitan pizza and Southern Italian cooking in the Marina. Reserve in advance.", map:"https://www.google.com/maps/search/?api=1&query=A16+San+Francisco", web:"https://a16pizza.com", lat:37.7999, lng:-122.4421 },
+  { name:"Sam Ho Wan", tag:"Korean BBQ · Elevated", cat:"restaurant", desc:"Elevated Korean BBQ — a proper occasion restaurant. Reserve well in advance.", map:"https://www.google.com/maps/search/?api=1&query=Sam+Ho+Wan+San+Francisco", web:null, lat:37.7594, lng:-122.4102 },
+  { name:"Tony's Pizza Napoletana", tag:"Pizza · North Beach", cat:"restaurant", desc:"World-championship-winning pizza in North Beach. Reservations recommended, or wait in line.", map:"https://www.google.com/maps/search/?api=1&query=Tony+Pizza+Napoletana+San+Francisco", web:null, lat:37.8003, lng:-122.4090 },
+  { name:"Gary Danko", tag:"Fine Dining · Fisherman's Wharf", cat:"restaurant", desc:"One of SF's most celebrated restaurants. Classic fine dining done impeccably. Book months in advance.", map:"https://www.google.com/maps/search/?api=1&query=Gary+Danko+San+Francisco", web:"https://garydanko.com", lat:37.8058, lng:-122.4206 },
+  { name:"Acquerello", tag:"Fine Dining · Italian", cat:"restaurant", desc:"Exceptional Italian fine dining in a converted chapel. One of SF's true greats. Reserve early.", map:"https://www.google.com/maps/search/?api=1&query=Acquerello+San+Francisco", web:null, lat:37.7916, lng:-122.4215 },
+  { name:"Benu", tag:"Fine Dining · Three Michelin Stars", cat:"restaurant", desc:"Three Michelin stars. Contemporary cooking drawing on Korean and Chinese heritage. Book months ahead.", map:"https://www.google.com/maps/search/?api=1&query=Benu+San+Francisco", web:null, lat:37.7854, lng:-122.3991 },
+  { name:"San Tung", tag:"Chinese · Sunset", cat:"restaurant", desc:"No-frills Northern Chinese in the Inner Sunset. Go for the dumplings and dry-fried chicken wings.", map:"https://www.google.com/maps/search/?api=1&query=San+Tung+San+Francisco", web:null, lat:37.7637, lng:-122.4690 },
+  { name:"Hong Kong Lounge", tag:"Dim Sum · Richmond", cat:"restaurant", desc:"Straightforward, excellent dim sum on Geary in the Richmond District. A neighborhood staple.", map:"https://www.google.com/maps/search/?api=1&query=Hong+Kong+Lounge+San+Francisco", web:null, lat:37.7807, lng:-122.4766 },
+  { name:"Hillstone", tag:"American · Embarcadero", cat:"restaurant", desc:"Polished American food at a beautiful waterfront location on the Embarcadero. Reserve ahead.", map:"https://www.google.com/maps/search/?api=1&query=Hillstone+San+Francisco+Embarcadero", web:null, lat:37.8060, lng:-122.4051 },
+  { name:"RT Bistro", tag:"Californian · Inventive", cat:"restaurant", desc:"Inventive Californian from the RT Rotisserie team. Reserve in advance.", map:"https://www.google.com/maps/search/?api=1&query=RT+Bistro+San+Francisco", web:null, lat:37.7756, lng:-122.4233 },
+  { name:"NOPA", tag:"Californian · NoPa", cat:"restaurant", desc:"Longstanding Californian cooking with a wood-burning oven and lively atmosphere. Reserve ahead or try for a walk-in at the bar.", map:"https://www.google.com/maps/search/?api=1&query=NOPA+Restaurant+San+Francisco", web:null, lat:37.7757, lng:-122.4375 },
+  { name:"Heirloom Cafe", tag:"Californian · Mission", cat:"restaurant", desc:"Quiet, seasonal Californian in the Mission. Ingredient-driven cooking in a relaxed, unpretentious room. Excellent wine list. Reserve ahead.", map:"https://www.google.com/maps/search/?api=1&query=Heirloom+Cafe+San+Francisco", web:null, lat:37.7539, lng:-122.4135 },
+  { name:"Hinodeya Ramen", tag:"Ramen · Japantown", cat:"restaurant", desc:"Excellent tonkotsu ramen in Japantown. Clean, focused menu. Expect a short wait — worth it.", map:"https://www.google.com/maps/search/?api=1&query=Hinodeya+Ramen+Japantown+San+Francisco", web:null, lat:37.7854, lng:-122.4305 },
+  { name:"Maria Isabel", tag:"Mexican · Presidio Heights", cat:"restaurant", desc:"Coastal Mexican fine dining. Seasonal, elegant, and authentic flavors. Reserve in advance.", map:"https://www.google.com/maps/search/?api=1&query=Maria+Isabel+Restaurant+500+Presidio+Ave+San+Francisco", web:"https://www.mariaisabelsf.com", lat:37.7852, lng:-122.4478 },
+  { name:"Radhaus", tag:"German · Fort Mason", cat:"restaurant", desc:"Bavarian beer hall at Fort Mason (old military complex) with Golden Gate Bridge views. German food, great beer selection, and a lively atmosphere.", map:"https://www.google.com/maps/search/?api=1&query=Radhaus+Fort+Mason+San+Francisco", web:"https://radhaussf.com", lat:37.8066, lng:-122.4287 },
+  // Bars
+  { name:"Hi-Lo Club", tag:"Bar · Neighborhood", cat:"bar", desc:"Our go-to neighborhood bar. Unpretentious, fun, reliably good drinks and crowd.", map:"https://www.google.com/maps/search/?api=1&query=Hi-Lo+Club+San+Francisco", web:null, lat:37.7897, lng:-122.4202 },
+  { name:"Bar Sprezzatura", tag:"Bar · Aperitivo", cat:"bar", desc:"Our pick for drinks near the hotel. Beautiful atmosphere, great aperitivo selection and small plates. Close to The Jay.", map:"https://www.google.com/maps/search/?api=1&query=Bar+Sprezzatura+San+Francisco", web:null, lat:37.7875, lng:-122.3991 },
+  { name:"The Big Four", tag:"Bar & Restaurant · Classic SF", cat:["bar","restaurant"], desc:"Old-school San Francisco charm at the Huntington Hotel. Dark wood, leather, impeccable martinis.", map:"https://www.google.com/maps/search/?api=1&query=Big+Four+Restaurant+Bar+San+Francisco", web:null, lat:37.7915, lng:-122.4148 },
+  { name:"The Starlight Room", tag:"Rooftop Bar · Views", cat:"bar", desc:"Drinks with a view from the top of the Sir Francis Drake Hotel. A classic SF evening. Book ahead.", map:"https://www.google.com/maps/search/?api=1&query=Starlight+Room+San+Francisco", web:null, lat:37.7880, lng:-122.4082 },
+  { name:"Stookey's Club Moderne", tag:"Cocktail Bar · Art Deco", cat:"bar", desc:"A genuine blast from the 1920s past. Art deco ambiance, live music some nights.", map:"https://www.google.com/maps/search/?api=1&query=Stookey+Club+Moderne+San+Francisco", web:null, lat:37.7891, lng:-122.4141 },
+  { name:"Martuni's", tag:"Piano Bar", cat:"bar", desc:"Bird-bath-sized martinis and live piano. A quirky SF original — there is nowhere else like it.", map:"https://www.google.com/maps/search/?api=1&query=Martuni%27s+San+Francisco", web:null, lat:37.7720, lng:-122.4228 },
+  { name:"Fool's Errand", tag:"Wine Bar · Divisadero", cat:"bar", desc:"Natural wine bar on Divisadero Street. Relaxed, neighborhood, excellent list.", map:"https://www.google.com/maps/search/?api=1&query=Fool%27s+Errand+Wine+Bar+San+Francisco", web:null, lat:37.7756, lng:-122.4381 },
+  { name:"Local Edition", tag:"Bar · Live Music", cat:"bar", desc:"Live music (usually jazz) in a beautifully restored newspaper press room on Market Street.", map:"https://www.google.com/maps/search/?api=1&query=Local+Edition+Bar+San+Francisco", web:null, lat:37.7879, lng:-122.4022 },
+  { name:"Verjus", tag:"Wine Bar · Restaurant", cat:"bar", desc:"Excellent wine bar with a focused, thoughtful list. Also great for dinner. Reserve ahead.", map:"https://www.google.com/maps/search/?api=1&query=Verjus+Wine+Bar+San+Francisco", web:"https://verjussf.com", lat:37.7957, lng:-122.4027 },
+  { name:"Bar Jabroni", tag:"Wine Bar · Festive", cat:"bar", desc:"Great natural wine in a festive, lively atmosphere. A fun one.", map:"https://www.google.com/maps/search/?api=1&query=Bar+Jabroni+San+Francisco", web:null, lat:37.7719, lng:-122.4336 },
+  // Bakeries
+  { name:"Tartine Bakery", tag:"Bakery · Mission", cat:"bakery", desc:"The best bread and pastries in San Francisco. Visit the Manufactory for best seating; Guerrero location for most selection.", map:"https://www.google.com/maps/search/?api=1&query=Tartine+Manufactory+San+Francisco", web:"https://tartinebakery.com", lat:37.7618, lng:-122.4118 },
+  { name:"Arsicault Bakery", tag:"Bakery · Multiple Locations", cat:"bakery", desc:"Best croissants in the city. Eat them fresh and warm — that's the only rule. Multiple locations.", map:"https://www.google.com/maps/search/?api=1&query=Arsicault+Bakery+San+Francisco", web:null, lat:37.7834, lng:-122.4593 },
+  { name:"Early to Rise", tag:"Breakfast · Western Addition", cat:"bakery", desc:"Excellent breakfast and baked goods. Go early to beat the wait — worth it.", map:"https://www.google.com/maps/search/?api=1&query=Early+to+Rise+San+Francisco", web:null, lat:37.7761, lng:-122.4393 },
+  { name:"Maison Nico", tag:"French Pastry · FiDi", cat:"bakery", desc:"Excellent French pastries near The Jay. Croissants and kouign-amann are outstanding.", map:"https://www.google.com/maps/search/?api=1&query=Maison+Nico+San+Francisco", web:null, lat:37.7966, lng:-122.4029 },
+  // Fast Casual
+  { name:"Souvla", tag:"Fast Casual · Greek", cat:"casual", desc:"Greek-ish salads, sandwiches, and soup. Fast casual done exceptionally well. Multiple locations.", map:"https://www.google.com/maps/search/?api=1&query=Souvla+San+Francisco", web:"https://souvla.com", lat:37.7763, lng:-122.4244 },
+  { name:"RT Rotisserie", tag:"Fast Casual · Rotisserie", cat:"casual", desc:"Outstanding roast chicken and sides. Multiple locations around the city.", map:"https://www.google.com/maps/search/?api=1&query=RT+Rotisserie+San+Francisco", web:null, lat:37.7757, lng:-122.4238 },
+  { name:"The Tailor's Son", tag:"Fast Casual · Italian", cat:"casual", desc:"Relaxed Italian-influenced spot on Fillmore Street. Great for a quick, satisfying lunch.", map:"https://www.google.com/maps/search/?api=1&query=The+Tailor%27s+Son+San+Francisco", web:null, lat:37.7905, lng:-122.4321 },
+  // Further Afield
+  { name:"Joinery", tag:"Sausalito · Dockside", cat:"afield", desc:"Dockside fast-casual in Sausalito. Order at the counter, eat outside by the water. Great after the Golden Gate Bridge walk.", map:"https://www.google.com/maps/search/?api=1&query=Joinery+Sausalito+CA", web:null, lat:37.8601, lng:-122.4857 },
+  { name:"Fish", tag:"Sausalito · Seafood", cat:"afield", desc:"Dockside seafood spot in Sausalito. Known for their fresh-catch sandwiches and chowder.", map:"https://www.google.com/maps/search/?api=1&query=Fish+Restaurant+Sausalito+CA", web:null, lat:37.8681, lng:-122.4978 },
+  { name:"New England Lobster Co.", tag:"Burlingame · Near Airport", cat:"afield", desc:"Outstanding lobster rolls and fresh seafood. Worth the 20-minute trip to Burlingame near SFO.", map:"https://www.google.com/maps/search/?api=1&query=New+England+Lobster+Company+Burlingame+CA", web:null, lat:37.6027, lng:-122.3747 },
+  { name:"Chez Panisse", tag:"Berkeley · American", cat:"afield", desc:"Alice Waters' legendary Berkeley institution. Fixed prix-fixe downstairs; more casual cafe upstairs. Reserve well in advance.", map:"https://www.google.com/maps/search/?api=1&query=Chez+Panisse+Berkeley+CA", web:null, lat:37.8744, lng:-122.2681 },
+  { name:"Great China", tag:"Berkeley · Chinese", cat:"afield", desc:"Exceptional Chinese food in Berkeley. Must-order: the Double Skin appetizer and Peking Duck.", map:"https://www.google.com/maps/search/?api=1&query=Great+China+Restaurant+Berkeley+CA", web:null, lat:37.8677, lng:-122.2662 },
+  { name:"El Molino Central", tag:"Sonoma · Fast Casual Mexican", cat:"afield", desc:"Excellent fast casual Mexican in Sonoma, Wine Country. Run by the same team behind Primavera Mexican at the Ferry Building Farmer's Market — same quality, more room to sit.", map:"https://www.google.com/maps/search/?api=1&query=El+Molino+Central+Sonoma+CA", web:null, lat:38.2913, lng:-122.4620 },
+  { name:"Rosotti's Alpine Inn", tag:"Portola Valley · Outdoor", cat:"afield", desc:"California fare in a beautiful woodsy outdoor setting in Portola Valley. A beloved Bay Area institution.", map:"https://www.google.com/maps/search/?api=1&query=Alpine+Inn+Portola+Valley+CA", web:null, lat:37.3822, lng:-122.1938 },
+];
+
+const WALKS = [
+  {
+    num:"Walk 01", title:"Fillmore Street", sub:"Between Bush & Jackson Streets · Pacific Heights",
+    desc:"A quintessential SF neighborhood walk through one of the city's most charming commercial streets. Beautiful Victorian architecture, excellent shops, and several of our favorite spots all within a few blocks.",
+    stops:[
+      { b:"Jane", r:" — Breakfast and lunch neighborhood cafe and bakery. Get there early." },
+      { b:"The Tailor's Son", r:" — Dinner. Relaxed, Italian-influenced. Great pasta." },
+      { b:"The Little Shucker", r:" — Lunch and dinner. Fresh oysters, cold wine, good times." },
+      { b:"Salt & Straw", r:" — Ice cream. Inventive seasonal flavors. Always a line, but worth it." },
+    ],
+    center:[37.7910, -122.4322], zoom:15,
+    gmaps:"https://www.google.com/maps/dir/?api=1&origin=Fillmore+St+%26+Jackson+St+San+Francisco+CA&destination=Fillmore+St+%26+Bush+St+San+Francisco+CA&travelmode=walking",
+  },
+  {
+    num:"Walk 02", title:"The Marina", sub:"Union Street & Chestnut Street · Marina District",
+    desc:"The Marina is a lively and social SF neighborhood. Walk Union Street from Gough to Steiner and Chestnut Street between Fillmore and Divisadero for boutiques, lunch, afternoon drinks, and dinner options.",
+    stops:[
+      { b:"Souvla", r:" — Fast casual Greek. Salads, sandwiches, soup done brilliantly." },
+      { b:"A16", r:" — Excellent Neapolitan pizza and wine. Reserve ahead." },
+      { b:"Delarosa", r:" — Neighborhood pizza and pasta. Relaxed." },
+    ],
+    center:[37.7993, -122.4333], zoom:15,
+    gmaps:"https://www.google.com/maps/dir/?api=1&origin=Union+St+%26+Gough+St+San+Francisco+CA&destination=Chestnut+St+%26+Divisadero+St+San+Francisco+CA&waypoints=Union+St+%26+Steiner+St+San+Francisco+CA|Chestnut+St+%26+Fillmore+St+San+Francisco+CA&travelmode=walking",
+  },
+  {
+    num:"Walk 03", title:"Hyde Street", sub:"Between Union & Green Streets · Russian Hill",
+    desc:"A short, beloved stretch in Russian Hill with an outsized concentration of great spots. Perfect for an evening — drinks, excellent pasta, and ice cream to finish.",
+    stops:[
+      { b:"Union Larder", r:" — Drinks and charcuterie. A great start to the evening." },
+      { b:"Seven Hills", r:" — One of SF's best Italian restaurants. The pasta is extraordinary. Reserve in advance." },
+      { b:"Swensen's", r:" — Ice cream shop open since 1948. Classic SF." },
+    ],
+    center:[37.8010, -122.4191], zoom:16,
+    gmaps:"https://www.google.com/maps/dir/?api=1&origin=Hyde+St+%26+Union+St+San+Francisco+CA&destination=Hyde+St+%26+Green+St+San+Francisco+CA&travelmode=walking",
+  },
+  {
+    num:"Walk 04", title:"Hayes Valley", sub:"Hayes Street · Hayes Valley",
+    desc:"One of SF's best walkable neighborhoods. Hayes Street is lined with excellent restaurants, wine bars, cocktail spots, and independent boutiques all within a few blocks of each other.",
+    stops:[
+      { b:"Souvla", r:" — Fast casual Greek in the heart of Hayes Valley." },
+      { b:"Anina", r:" — Excellent cocktail bar with a rotating, thoughtful menu." },
+      { b:"Birba", r:" — Natural wine bar. Relaxed, low-key, great list." },
+      { b:"Rich Table", r:" — Hayes Valley's most popular restaurant. Reserve in advance." },
+    ],
+    center:[37.7762, -122.4270], zoom:15,
+    gmaps:"https://www.google.com/maps/dir/?api=1&origin=Hayes+St+%26+Gough+St+San+Francisco+CA&destination=Hayes+St+%26+Fillmore+St+San+Francisco+CA&travelmode=walking",
+  },
+];
+
+const PARKS = [
+  { name:"Presidio Tunnel Tops", desc:"One of SF's newest and best parks, built atop the Presidio Tunnel. Lounge on the lawn with spectacular Golden Gate Bridge views. Grab coffee or lunch at Il Parco or from the food trucks.", map:"https://www.google.com/maps/search/?api=1&query=Presidio+Tunnel+Tops+Park+San+Francisco" },
+  { name:"Lafayette Park", desc:"Our favorite park, right in our neighborhood. Very close to the Fillmore Street walk outlined above. A peaceful neighborhood gem - go to the pin in the map link to stand in one of the best lookout points in the city.", map:"https://www.google.com/maps?q=37.792147,-122.427739" },
+  { name:"Marina Green & Crissy Field", desc:"Walk (or run) from Marina Green through the restored tidal marsh of Crissy Field all the way to Fort Point. Bay views the entire way — see our featured walk above.", map:"https://www.google.com/maps/search/?api=1&query=Crissy+Field+San+Francisco" },
+  { name:"Alamo Square Park", desc:"Home to the famous Victorian 'Painted Ladies' of Full House fame. Best visited in the morning or at golden hour — the view of the houses against the city skyline is genuinely beautiful.", map:"https://www.google.com/maps/search/?api=1&query=Alamo+Square+Park+San+Francisco" },
+];
+
+// ====================================================
+// NAVIGATION
+// ====================================================
+
+let currentPage = 'home';
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  currentPage = page;
+  window.scrollTo(0, 0);
+
+  if (page === 'hotel') {
+    currentHotelFilter = 'all';
+    document.querySelectorAll('#hotel-filters .filter-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+    renderGrid('hotel-grid', HOTEL_PLACES, 'all');
+    setTimeout(initHotelMap, 100);
+  }
+  if (page === 'explore') {
+    renderGrid('explore-grid', EXPLORE_PLACES, 'all');
+    setTimeout(initExploreMap, 100);
+  }
+  if (page === 'activities') {
+    renderWalks();
+    renderParks();
+    setTimeout(initActivityMaps, 200);
+  }
+
+  // close mobile menu
+  document.getElementById('nav-links').classList.remove('open');
+}
+
+function toggleMenu() {
+  document.getElementById('nav-links').classList.toggle('open');
+}
+
+// ====================================================
+// RENDER FUNCTIONS
+// ====================================================
+
+function makeMarkerIcon(color) {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:11px;height:11px;background:${color};border-radius:50%;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.28);"></div>`,
+    iconSize: [11, 11],
+    iconAnchor: [5, 5],
+    popupAnchor: [0, -10],
+  });
+}
+
+function makePopup(name, tag, mapUrl) {
+  return `<strong>${name}</strong><span>${tag}</span><a href="${mapUrl}" target="_blank">View on Google Maps ↗</a>`;
+}
+
+function renderGrid(id, places, filter) {
+  const el = document.getElementById(id);
+  const list = filter && filter !== 'all' ? places.filter(p => Array.isArray(p.cat) ? p.cat.includes(filter) : p.cat === filter) : places;
+  el.innerHTML = list.map(p => `
+    <div class="place-card">
+      <div class="place-tag">${p.tag}</div>
+      <div class="place-name">${p.name}</div>
+      <div class="place-desc">${p.desc}</div>
+      <div class="place-links">
+        <a class="place-link" href="${p.map}" target="_blank">Map ↗</a>
+        ${p.web ? `<a class="place-link" href="${p.web}" target="_blank">Website ↗</a>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ====================================================
+// HOTEL MAP
+// ====================================================
+
+let hotelMap = null;
+let currentHotelFilter = 'all';
+
+function filterHotel(cat, btn) {
+  currentHotelFilter = cat;
+  document.querySelectorAll('#hotel-filters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid('hotel-grid', HOTEL_PLACES, cat);
+  updateHotelMarkers(cat);
+}
+
+function updateHotelMarkers(filter) {
+  if (!hotelMap) return;
+  hotelMap.eachLayer(layer => { if (layer instanceof L.Marker) hotelMap.removeLayer(layer); });
+  const list = filter === 'all' ? HOTEL_PLACES : HOTEL_PLACES.filter(p => Array.isArray(p.cat) ? p.cat.includes(filter) : p.cat === filter);
+  list.forEach(p => {
+    L.marker([p.lat, p.lng], { icon: makeMarkerIcon('#2B3A55') })
+      .addTo(hotelMap)
+      .bindPopup(makePopup(p.name, p.tag, p.map));
+  });
+}
+
+function initHotelMap() {
+  if (hotelMap) { hotelMap.invalidateSize(); return; }
+  const el = document.getElementById('hotel-map');
+  if (!el) return;
+  hotelMap = L.map('hotel-map').setView([37.7960, -122.3995], 15);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 19,
+  }).addTo(hotelMap);
+
+  HOTEL_PLACES.forEach(p => {
+    L.marker([p.lat, p.lng], { icon: makeMarkerIcon('#2B3A55') })
+      .addTo(hotelMap)
+      .bindPopup(makePopup(p.name, p.tag, p.map));
+  });
+}
+
+function setHotelView(view) {
+  const list = document.getElementById('hotel-list-view');
+  const mapW = document.getElementById('hotel-map-wrap');
+  const lb = document.getElementById('hotel-list-btn');
+  const mb = document.getElementById('hotel-map-btn');
+  if (view === 'list') {
+    list.style.display = 'block'; mapW.classList.remove('visible');
+    lb.classList.add('active'); mb.classList.remove('active');
+  } else {
+    list.style.display = 'none'; mapW.classList.add('visible');
+    mb.classList.add('active'); lb.classList.remove('active');
+    setTimeout(() => { if (hotelMap) { hotelMap.invalidateSize(); updateHotelMarkers(currentHotelFilter); } }, 120);
+  }
+}
+
+// ====================================================
+// EXPLORE MAP
+// ====================================================
+
+let exploreMap = null;
+let exploreMarkers = [];
+let currentFilter = 'all';
+
+const CAT_COLORS = {
+  restaurant: '#2B3A55',
+  bar: '#7B5E42',
+  bakery: '#5A7A5A',
+  casual: '#6B5A7A',
+  afield: '#4A6B7A',
+};
+
+function initExploreMap() {
+  if (exploreMap) { exploreMap.invalidateSize(); return; }
+  const el = document.getElementById('explore-map');
+  if (!el) return;
+  exploreMap = L.map('explore-map').setView([37.7850, -122.4150], 13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    maxZoom: 19,
+  }).addTo(exploreMap);
+  updateExploreMarkers('all');
+}
+
+function updateExploreMarkers(filter) {
+  if (!exploreMap) return;
+  exploreMarkers.forEach(m => exploreMap.removeLayer(m));
+  exploreMarkers = [];
+  const list = filter === 'all' ? EXPLORE_PLACES : EXPLORE_PLACES.filter(p => Array.isArray(p.cat) ? p.cat.includes(filter) : p.cat === filter);
+  list.forEach(p => {
+    if (!p.lat) return;
+    const m = L.marker([p.lat, p.lng], { icon: makeMarkerIcon(CAT_COLORS[p.cat] || '#2B3A55') })
+      .addTo(exploreMap)
+      .bindPopup(makePopup(p.name, p.tag, p.map));
+    exploreMarkers.push(m);
+  });
+}
+
+function filterExplore(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid('explore-grid', EXPLORE_PLACES, cat);
+  updateExploreMarkers(cat);
+}
+
+function setExploreView(view) {
+  const list = document.getElementById('explore-list-view');
+  const mapW = document.getElementById('explore-map-wrap');
+  const lb = document.getElementById('explore-list-btn');
+  const mb = document.getElementById('explore-map-btn');
+  if (view === 'list') {
+    list.style.display = 'block'; mapW.classList.remove('visible');
+    lb.classList.add('active'); mb.classList.remove('active');
+  } else {
+    list.style.display = 'none'; mapW.classList.add('visible');
+    mb.classList.add('active'); lb.classList.remove('active');
+    setTimeout(() => {
+      if (!exploreMap) initExploreMap();
+      else { exploreMap.invalidateSize(); updateExploreMarkers(currentFilter); }
+    }, 120);
+  }
+}
+
+// ====================================================
+// ACTIVITIES: WALKS
+// ====================================================
+
+let walkMaps = {};
+
+function renderWalks() {
+  const c = document.getElementById('walks-container');
+  if (c.innerHTML.trim()) return; // already rendered
+  c.innerHTML = WALKS.map((w, i) => `
+    <div class="walk-card">
+      <div class="walk-head">
+        <div class="walk-num">${w.num}</div>
+        <div class="walk-title">${w.title}</div>
+        <div class="walk-sub">${w.sub}</div>
+      </div>
+      <div class="walk-body">
+        <div class="walk-info">
+          <p class="walk-desc">${w.desc}</p>
+          <ul class="walk-stops">
+            ${w.stops.map(s => `<li><strong>${s.b}</strong>${s.r}</li>`).join('')}
+          </ul>
+          <a href="${w.gmaps}" target="_blank" class="place-link" style="display:inline-block;margin-top:12px;">View Walk on Google Maps ↗</a>
+        </div>
+        <div class="walk-map-pane" id="walk-map-pane-${i}">
+          <div id="walk-map-${i}" style="width:100%;height:100%;"></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderParks() {
+  const g = document.getElementById('parks-grid');
+  if (g.innerHTML.trim()) return;
+  g.innerHTML = PARKS.map(p => `
+    <div class="park-card">
+      <div class="place-tag">Park · Outdoors</div>
+      <div class="place-name" style="font-family:'Cormorant Garamond',serif;font-size:23px;font-weight:400;margin:8px 0 10px;">${p.name}</div>
+      <div class="place-desc" style="font-size:12.5px;line-height:1.72;opacity:0.7;margin-bottom:14px;">${p.desc}</div>
+      <a class="place-link" href="${p.map}" target="_blank">View on Map ↗</a>
+    </div>
+  `).join('');
+}
+
+function initActivityMaps() {
+  // Crissy Field walk map
+  const crissyEl = document.getElementById('crissy-map');
+  if (crissyEl && !crissyEl._leaflet_id) {
+    const m = L.map('crissy-map', { zoomControl: false, scrollWheelZoom: false }).setView([37.8065, -122.4568], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+    }).addTo(m);
+
+    // Route points: Marina Green → Crissy Field → Fort Point
+    const routePoints = [
+      [37.8062, -122.4423], // Philz truck at Marina Green (confirmed)
+      [37.8058, -122.4478], // along Marina Green path heading west
+      [37.8056, -122.4530], // East Beach / Crissy Field east
+      [37.8058, -122.4600], // Crissy Field center path
+      [37.8063, -122.4668], // Warming Hut / Crissy Field west
+      [37.8095, -122.4735], // approach Fort Point
+      [37.8107, -122.4763], // Fort Point
+    ];
+
+    const routeLine = L.polyline(routePoints, {
+      color: '#2B3A55',
+      weight: 3,
+      opacity: 0.75,
+      dashArray: '6 4',
+    }).addTo(m);
+
+    const startIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:13px;height:13px;background:#5A7A5A;border-radius:50%;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.3);"></div>`,
+      iconSize:[13,13], iconAnchor:[6,6], popupAnchor:[0,-10],
+    });
+    const endIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:13px;height:13px;background:#2B3A55;border-radius:50%;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.3);"></div>`,
+      iconSize:[13,13], iconAnchor:[6,6], popupAnchor:[0,-10],
+    });
+
+    L.marker([37.8062, -122.4423], { icon: startIcon }).addTo(m)
+      .bindPopup('<strong>Start: Marina Green</strong><span>Philz Coffee Truck</span>');
+    L.marker([37.8058, -122.4600], { icon: makeMarkerIcon('#2B3A55') }).addTo(m)
+      .bindPopup('<strong>Crissy Field</strong><span>Restored tidal marsh · Bay views</span>');
+    L.marker([37.8107, -122.4763], { icon: endIcon }).addTo(m)
+      .bindPopup('<strong>Fort Point</strong><span>Under the Golden Gate Bridge</span>');
+
+    m.fitBounds(routeLine.getBounds(), { padding: [24, 24] });
+  }
+
+  // Golden Gate Park highlight map
+  const ggpEl = document.getElementById('ggp-map');
+  if (ggpEl && !ggpEl._leaflet_id) {
+    const m = L.map('ggp-map', { zoomControl: false, scrollWheelZoom: false }).setView([37.7688, -122.4635], 15);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+    }).addTo(m);
+
+    const routePoints = [
+      [37.7681, -122.4583], // California Kahve / Carousel
+      [37.7697, -122.4620], // AIDS Memorial Grove
+      [37.7699, -122.4661], // Cal Academy of Sciences
+      [37.7677, -122.4693], // SF Botanical Garden
+    ];
+
+    L.polyline(routePoints, {
+      color: '#2B3A55', weight: 3, opacity: 0.75, dashArray: '6 4',
+    }).addTo(m);
+
+    const startIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:13px;height:13px;background:#5A7A5A;border-radius:50%;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.3);"></div>`,
+      iconSize:[13,13], iconAnchor:[6,6], popupAnchor:[0,-10],
+    });
+    const midIcon = makeMarkerIcon('#2B3A55');
+    const endIcon = L.divIcon({
+      className: '',
+      html: `<div style="width:13px;height:13px;background:#2B3A55;border-radius:50%;border:2px solid white;box-shadow:0 1px 5px rgba(0,0,0,0.3);"></div>`,
+      iconSize:[13,13], iconAnchor:[6,6], popupAnchor:[0,-10],
+    });
+
+    L.marker([37.7681, -122.4583], { icon: startIcon }).addTo(m)
+      .bindPopup('<strong>California Kahve</strong><span>Herbal lattes · Park entrance</span>');
+    L.marker([37.7697, -122.4620], { icon: midIcon }).addTo(m)
+      .bindPopup('<strong>AIDS Memorial Grove</strong><span>Quiet grove · Heart of the park</span>');
+    L.marker([37.7699, -122.4661], { icon: midIcon }).addTo(m)
+      .bindPopup('<strong>California Academy of Sciences</strong><span>Natural history museum · Living roof</span>');
+    L.marker([37.7677, -122.4693], { icon: endIcon }).addTo(m)
+      .bindPopup('<strong>SF Botanical Garden</strong><span>55 acres · Free for SF residents</span>');
+  }
+
+  // Neighborhood walk mini-maps
+  WALKS.forEach((w, i) => {
+    const el = document.getElementById(`walk-map-${i}`);
+    if (!el || el._leaflet_id) return;
+    const m = L.map(`walk-map-${i}`, { zoomControl: false, dragging: false, scrollWheelZoom: false, touchZoom: false, doubleClickZoom: false, keyboard: false })
+      .setView(w.center, w.zoom);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '', maxZoom: 19
+    }).addTo(m);
+    walkMaps[i] = m;
+  });
+
+  // Sausalito map
+  const sauEl = document.getElementById('sausalito-map');
+  if (sauEl && !sauEl._leaflet_id) {
+    const m = L.map('sausalito-map', { zoomControl: true, scrollWheelZoom: false }).setView([37.8641, -122.4917], 14);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19
+    }).addTo(m);
+    const ico = makeMarkerIcon('#2B3A55');
+    L.marker([37.8600587, -122.4856591], { icon: ico }).addTo(m).bindPopup('<strong>Joinery</strong><span>Dockside fast casual</span>');
+    L.marker([37.8681402, -122.4977574], { icon: ico }).addTo(m).bindPopup('<strong>Fish</strong><span>Dockside seafood</span>');
+    L.marker([37.8199, -122.4783], { icon: makeMarkerIcon('#8B6F4E') }).addTo(m).bindPopup('<strong>Golden Gate Bridge</strong><span>Walk or bike across</span>');
+  }
+}
+
+// ====================================================
+// INIT
+// ====================================================
+window.addEventListener('DOMContentLoaded', () => {
+  showPage('home');
+});
+
+</script>
+</body>
+</html>
